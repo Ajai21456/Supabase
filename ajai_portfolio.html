@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ajai C — Software Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --deep: #0d0d0d;
+    --surface: #111111;
+    --border: rgba(255,255,255,0.06);
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --white: #f4f0e8;
+    --muted: rgba(244,240,232,0.4);
+    --accent: #4a9eff;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Mono', monospace;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  .cursor {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+  }
+  .cursor-dot {
+    width: 8px; height: 8px; background: var(--gold);
+    border-radius: 50%; transform: translate(-50%,-50%);
+    transition: transform 0.1s ease;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(201,168,76,0.5);
+    border-radius: 50%; transform: translate(-50%,-50%);
+    transition: all 0.15s ease;
+    position: absolute; top: 0; left: 0;
+  }
+  body:has(a:hover) .cursor-ring,
+  body:has(button:hover) .cursor-ring { transform: translate(-50%,-50%) scale(1.8); border-color: var(--gold); }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 24px 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid transparent;
+    transition: all 0.4s ease;
+  }
+  nav.scrolled {
+    background: rgba(8,8,8,0.92); backdrop-filter: blur(20px);
+    border-bottom-color: var(--border);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 22px; letter-spacing: -0.5px;
+    color: var(--white);
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; position: relative;
+    display: flex; align-items: center;
+    padding: 0 60px;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(201,168,76,0.04) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 10% 90%, rgba(74,158,255,0.03) 0%, transparent 60%);
+  }
+  .hero-lines {
+    position: absolute; inset: 0; z-index: 0; overflow: hidden;
+  }
+  .hero-lines::before {
+    content: '';
+    position: absolute; top: 0; right: 20%; width: 1px; height: 100%;
+    background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.15), transparent);
+    animation: linePulse 4s ease-in-out infinite;
+  }
+  .hero-lines::after {
+    content: '';
+    position: absolute; top: 0; right: 40%; width: 1px; height: 100%;
+    background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.07), transparent);
+    animation: linePulse 4s ease-in-out infinite 2s;
+  }
+  @keyframes linePulse {
+    0%,100% { opacity: 0.3; } 50% { opacity: 1; }
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 900px; }
+
+  .hero-tag {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 28px;
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0; animation: fadeSlideUp 0.8s ease forwards 0.3s;
+  }
+  .hero-tag::before {
+    content:''; display:block; width:40px; height:1px;
+    background: var(--gold);
+  }
+
+  .hero-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(72px, 10vw, 140px);
+    font-weight: 300; line-height: 0.9;
+    letter-spacing: -3px;
+    opacity: 0; animation: fadeSlideUp 1s ease forwards 0.5s;
+  }
+  .hero-name em { font-style: italic; color: var(--gold-light); }
+
+  .hero-role {
+    margin-top: 32px;
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 400; letter-spacing: 0.08em;
+    color: var(--muted);
+    opacity: 0; animation: fadeSlideUp 1s ease forwards 0.7s;
+  }
+  .hero-role strong { color: var(--white); }
+
+  .hero-desc {
+    margin-top: 24px; max-width: 520px;
+    font-size: 13px; line-height: 1.9;
+    color: rgba(244,240,232,0.35);
+    opacity: 0; animation: fadeSlideUp 1s ease forwards 0.9s;
+  }
+
+  .hero-cta {
+    margin-top: 52px; display: flex; gap: 20px; align-items: center;
+    opacity: 0; animation: fadeSlideUp 1s ease forwards 1.1s;
+  }
+  .btn-primary {
+    background: var(--gold); color: var(--black);
+    padding: 14px 32px; font-family: 'Syne', sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    border: none; cursor: none; text-decoration: none;
+    transition: all 0.3s ease; display: inline-block;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--gold-light); transform: translateX(-100%);
+    transition: transform 0.4s ease;
+  }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-primary span { position: relative; z-index: 1; }
+
+  .btn-secondary {
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    border-bottom: 1px solid rgba(244,240,232,0.2);
+    padding-bottom: 2px;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover { color: var(--white); border-color: var(--white); }
+
+  /* ── TICKER ── */
+  .ticker {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0; overflow: hidden;
+    background: var(--surface); position: relative; z-index: 2;
+  }
+  .ticker-track {
+    display: flex; gap: 0;
+    animation: tickerMove 25s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); padding: 0 40px;
+    display: flex; align-items: center; gap: 20px; flex-shrink: 0;
+  }
+  .ticker-item::after {
+    content: '✦'; color: var(--gold); font-size: 8px;
+  }
+  @keyframes tickerMove {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 120px 60px; position: relative; }
+  .section-label {
+    font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 60px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+  .section-label span { font-size: 9px; color: var(--muted); }
+
+  .section-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 300; line-height: 1.1; letter-spacing: -2px;
+  }
+  .section-heading em { font-style: italic; color: var(--gold); }
+
+  /* ── ABOUT ── */
+  .about { background: var(--deep); }
+  .about-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    margin-top: 60px; align-items: start;
+  }
+  .about-text p {
+    font-size: 14px; line-height: 2; color: rgba(244,240,232,0.6);
+    margin-bottom: 20px;
+  }
+  .about-text p strong { color: var(--white); font-weight: 500; }
+  .about-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+  }
+  .stat-card {
+    background: var(--surface);
+    padding: 36px 32px;
+    border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .stat-card:hover { border-color: rgba(201,168,76,0.3); }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(to right, var(--gold), transparent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .stat-card:hover::before { transform: scaleX(1); }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px; font-weight: 300; color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-top: 8px;
+  }
+
+  /* ── SKILLS ── */
+  .skills { background: var(--black); }
+  .skills-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+    margin-top: 60px;
+  }
+  .skill-group {
+    padding: 40px 36px; background: var(--surface);
+    border: 1px solid var(--border);
+    transition: all 0.4s ease; position: relative; overflow: hidden;
+  }
+  .skill-group:hover { background: #161616; border-color: rgba(201,168,76,0.25); }
+  .skill-group-label {
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 20px;
+  }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .skill-tag {
+    font-size: 11px; padding: 6px 14px;
+    border: 1px solid var(--border); color: var(--muted);
+    transition: all 0.3s;
+    letter-spacing: 0.05em;
+  }
+  .skill-group:hover .skill-tag {
+    border-color: rgba(201,168,76,0.2); color: rgba(244,240,232,0.7);
+  }
+  .skill-bar-wrap { margin-top: 24px; }
+  .skill-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .skill-bar-name { font-size: 10px; color: var(--muted); width: 80px; flex-shrink: 0; }
+  .skill-bar-bg {
+    flex: 1; height: 2px; background: rgba(255,255,255,0.05);
+    overflow: hidden;
+  }
+  .skill-bar-fill {
+    height: 100%; background: linear-gradient(to right, var(--gold), var(--gold-light));
+    width: 0; transition: width 1.2s ease;
+  }
+  .skill-bar-fill.animated { width: var(--w); }
+
+  /* ── EXPERIENCE ── */
+  .experience { background: var(--deep); }
+  .exp-timeline { margin-top: 60px; position: relative; }
+  .exp-timeline::before {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 1px;
+    background: linear-gradient(to bottom, var(--gold), transparent 80%);
+  }
+  .exp-item {
+    padding: 0 0 60px 48px; position: relative;
+    opacity: 0; transform: translateY(30px);
+    transition: all 0.7s ease;
+  }
+  .exp-item.visible { opacity: 1; transform: translateY(0); }
+  .exp-dot {
+    position: absolute; left: -6px; top: 6px;
+    width: 13px; height: 13px;
+    border: 1px solid var(--gold); background: var(--black);
+    border-radius: 50%;
+  }
+  .exp-dot::after {
+    content: ''; position: absolute; inset: 3px;
+    background: var(--gold); border-radius: 50%;
+  }
+  .exp-meta {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+    display: flex; gap: 20px; align-items: center;
+  }
+  .exp-meta .period { color: var(--muted); }
+  .exp-company {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700; color: var(--white);
+    margin-bottom: 4px;
+  }
+  .exp-role {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-style: italic;
+    color: var(--muted); margin-bottom: 20px;
+  }
+  .exp-points { list-style: none; }
+  .exp-points li {
+    font-size: 13px; color: rgba(244,240,232,0.5);
+    padding: 6px 0 6px 20px; position: relative; line-height: 1.7;
+  }
+  .exp-points li::before {
+    content: '→'; position: absolute; left: 0;
+    color: var(--gold); font-size: 12px;
+  }
+  .badge {
+    display: inline-block; font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 4px 10px;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold); margin-left: 12px;
+  }
+
+  /* ── PROJECTS ── */
+  .projects { background: var(--black); }
+  .projects-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 2px; margin-top: 60px;
+  }
+  .project-card {
+    background: var(--surface); padding: 48px 44px;
+    border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    transition: all 0.5s ease;
+    opacity: 0; transform: translateY(40px);
+  }
+  .project-card.visible { opacity: 1; transform: translateY(0); }
+  .project-card:hover { border-color: rgba(201,168,76,0.3); background: #141414; }
+  .project-card::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(to right, var(--gold), var(--accent));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.5s ease;
+  }
+  .project-card:hover::after { transform: scaleX(1); }
+  .project-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px; font-weight: 300;
+    color: rgba(201,168,76,0.07); position: absolute;
+    top: 20px; right: 30px; line-height: 1; pointer-events: none;
+  }
+  .project-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700; margin-bottom: 16px;
+    color: var(--white);
+  }
+  .project-desc {
+    font-size: 13px; color: rgba(244,240,232,0.5);
+    line-height: 1.8; margin-bottom: 28px;
+  }
+  .project-stack { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .stack-tag {
+    font-size: 10px; letter-spacing: 0.1em;
+    padding: 4px 12px; border: 1px solid var(--border);
+    color: var(--muted); transition: all 0.3s;
+  }
+  .project-card:hover .stack-tag { border-color: rgba(201,168,76,0.2); }
+  .project-link {
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+    transition: gap 0.3s;
+  }
+  .project-link:hover { gap: 14px; }
+  .project-highlight {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--surface) 0%, #131313 100%);
+  }
+
+  /* ── EDUCATION ── */
+  .education { background: var(--deep); }
+  .edu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 60px; }
+  .edu-card {
+    padding: 44px 40px; background: var(--surface);
+    border: 1px solid var(--border);
+    opacity: 0; transform: translateY(30px); transition: all 0.7s ease;
+  }
+  .edu-card.visible { opacity: 1; transform: translateY(0); }
+  .edu-degree {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 400;
+    line-height: 1.2; margin-bottom: 12px;
+  }
+  .edu-school {
+    font-family: 'Syne', sans-serif; font-size: 13px;
+    font-weight: 600; color: var(--gold); margin-bottom: 8px;
+  }
+  .edu-period { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+
+  /* ── CERTIFICATIONS ── */
+  .certs { background: var(--black); }
+  .cert-list { margin-top: 60px; }
+  .cert-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 0; border-bottom: 1px solid var(--border);
+    opacity: 0; transform: translateX(-20px);
+    transition: all 0.5s ease;
+  }
+  .cert-item.visible { opacity: 1; transform: translateX(0); }
+  .cert-item:hover .cert-name { color: var(--gold); }
+  .cert-name {
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
+    transition: color 0.3s;
+  }
+  .cert-issuer { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+  .cert-date { font-size: 11px; color: var(--gold); letter-spacing: 0.1em; }
+
+  /* ── CONTACT ── */
+  .contact {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    text-align: center; padding: 120px 60px;
+    position: relative; overflow: hidden;
+  }
+  .contact::before {
+    content: ''; position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .contact-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 6vw, 96px); font-weight: 300;
+    line-height: 0.95; letter-spacing: -3px; margin-bottom: 36px;
+  }
+  .contact-title em { font-style: italic; color: var(--gold); display: block; }
+  .contact-links {
+    display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
+    margin-top: 52px;
+  }
+  .contact-link {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+    border: 1px solid var(--border); padding: 14px 28px;
+    transition: all 0.3s;
+  }
+  .contact-link:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 28px 60px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--black);
+  }
+  .footer-copy { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-heart { font-size: 11px; color: var(--muted); }
+  .footer-heart span { color: var(--gold); }
+
+  /* ── SCROLL ANIMATIONS ── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  /* ── FLOATING LETTERS (BG) ── */
+  .bg-text {
+    position: absolute; right: -20px; top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 200px; font-weight: 300;
+    color: rgba(201,168,76,0.03);
+    pointer-events: none; white-space: nowrap;
+    letter-spacing: -10px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    section { padding: 80px 24px; }
+    .hero { padding: 0 24px; }
+    .about-grid, .skills-grid, .projects-grid,
+    .edu-grid { grid-template-columns: 1fr; }
+    .projects-grid .project-highlight { grid-column: 1; }
+    footer { padding: 24px; flex-direction: column; gap: 8px; text-align: center; }
+    .contact { padding: 80px 24px; }
+    .contact-links { gap: 16px; }
+  }
+
+  /* ── GOLD DIVIDER ── */
+  .gold-line {
+    width: 60px; height: 2px;
+    background: linear-gradient(to right, var(--gold), transparent);
+    margin: 20px 0 40px;
+  }
+
+  /* ── AWARD BADGE ── */
+  .award {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.06));
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 8px 16px; margin-top: 16px;
+    font-size: 11px; color: var(--gold); letter-spacing: 0.1em;
+  }
+  .award::before { content: '🏅'; font-size: 14px; }
+
+  /* scroll to top */
+  .scroll-top {
+    position: fixed; bottom: 36px; right: 36px;
+    width: 48px; height: 48px;
+    background: var(--gold); color: var(--black);
+    display: flex; align-items: center; justify-content: center;
+    cursor: none; z-index: 99;
+    font-size: 18px; opacity: 0;
+    transition: all 0.3s; transform: translateY(20px);
+    border: none;
+  }
+  .scroll-top.visible { opacity: 1; transform: translateY(0); }
+  .scroll-top:hover { background: var(--gold-light); }
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor">
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">Ajai<span>.</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Software Developer · Chennai, India</div>
+    <h1 class="hero-name">Ajai<br><em>C.</em></h1>
+    <p class="hero-role">
+      <strong>Backend Developer</strong> · Node.js · Python · PostgreSQL · RESTful APIs
+    </p>
+    <p class="hero-desc">
+      Building scalable server-side systems with clean architecture. Fortune 500 intern. MSc Computer Science candidate. 400+ issues resolved with zero repeat escalation.
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn-primary"><span>View Work</span></a>
+      <a href="mailto:ajai21456@gmail.com" class="btn-secondary">Get in Touch →</a>
+    </div>
+  </div>
+  <div class="bg-text">BACKEND</div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack">
+    <div class="ticker-item">Node.js</div>
+    <div class="ticker-item">Express.js</div>
+    <div class="ticker-item">PostgreSQL</div>
+    <div class="ticker-item">Python</div>
+    <div class="ticker-item">REST APIs</div>
+    <div class="ticker-item">Java</div>
+    <div class="ticker-item">MongoDB</div>
+    <div class="ticker-item">Docker</div>
+    <div class="ticker-item">Git / GitHub</div>
+    <div class="ticker-item">EDI Integration</div>
+    <div class="ticker-item">JWT Auth</div>
+    <div class="ticker-item">Microservices</div>
+    <div class="ticker-item">System Design</div>
+    <div class="ticker-item">Oracle Certified</div>
+    <div class="ticker-item">Node.js</div>
+    <div class="ticker-item">Express.js</div>
+    <div class="ticker-item">PostgreSQL</div>
+    <div class="ticker-item">Python</div>
+    <div class="ticker-item">REST APIs</div>
+    <div class="ticker-item">Java</div>
+    <div class="ticker-item">MongoDB</div>
+    <div class="ticker-item">Docker</div>
+    <div class="ticker-item">Git / GitHub</div>
+    <div class="ticker-item">EDI Integration</div>
+    <div class="ticker-item">JWT Auth</div>
+    <div class="ticker-item">Microservices</div>
+    <div class="ticker-item">System Design</div>
+    <div class="ticker-item">Oracle Certified</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="section-label">01 — About <span>/ Who I Am</span></div>
+  <h2 class="section-heading">Developer by <em>craft,</em><br>problem-solver by nature</h2>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>I'm a <strong>backend-focused software developer</strong> from Chennai currently pursuing my MSc in Computer Science at Hindustan College. I specialize in building server-side architectures that are clean, scalable, and production-ready.</p>
+      <p>My professional journey spans enterprise-level EDI/API integration at <strong>Flextronics (Fortune 500)</strong>, full-time operations engineering at a growing startup, and academic deep-dives into distributed systems and machine learning.</p>
+      <p>I write systems that hold up under pressure. I debug with discipline. And I ship things that <strong>actually work</strong> — 400+ technical issues resolved, zero repeat escalation.</p>
+      <div class="award">Silver Coin Recognition — Outstanding Performance</div>
+    </div>
+    <div class="about-stats">
+      <div class="stat-card">
+        <div class="stat-num" data-count="400">0</div>
+        <div class="stat-label">Issues Resolved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" data-count="3">0</div>
+        <div class="stat-label">Live APIs Integrated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" data-count="5">0</div>
+        <div class="stat-label">Certifications</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" data-count="2">0</div>
+        <div class="stat-label">Major Projects</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="skills" id="skills">
+  <div class="section-label">02 — Skills <span>/ Tech Stack</span></div>
+  <h2 class="section-heading">Built on a <em>solid</em><br>technical foundation</h2>
+  <div class="skills-grid">
+    <div class="skill-group">
+      <div class="skill-group-label">Languages</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">JavaScript</span>
+        <span class="skill-tag">Java</span>
+        <span class="skill-tag">SQL</span>
+      </div>
+      <div class="skill-bar-wrap">
+        <div class="skill-bar-row"><span class="skill-bar-name">Python</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:88%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">JavaScript</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:85%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">Java</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:75%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">SQL</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:80%"></div></div></div>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-label">Backend</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Node.js</span>
+        <span class="skill-tag">Express.js</span>
+        <span class="skill-tag">RESTful APIs</span>
+        <span class="skill-tag">JWT Auth</span>
+        <span class="skill-tag">Microservices</span>
+      </div>
+      <div class="skill-bar-wrap">
+        <div class="skill-bar-row"><span class="skill-bar-name">Node.js</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:90%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">Express.js</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:88%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">REST APIs</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:92%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">Auth/Security</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:78%"></div></div></div>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-label">Database & Tools</div>
+      <div class="skill-tags">
+        <span class="skill-tag">PostgreSQL</span>
+        <span class="skill-tag">MongoDB</span>
+        <span class="skill-tag">Docker</span>
+        <span class="skill-tag">Git</span>
+        <span class="skill-tag">Postman</span>
+        <span class="skill-tag">Linux</span>
+      </div>
+      <div class="skill-bar-wrap">
+        <div class="skill-bar-row"><span class="skill-bar-name">PostgreSQL</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:85%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">MongoDB</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:78%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">Git/GitHub</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:88%"></div></div></div>
+        <div class="skill-bar-row"><span class="skill-bar-name">Docker</span><div class="skill-bar-bg"><div class="skill-bar-fill" style="--w:65%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="experience" id="experience">
+  <div class="section-label">03 — Experience <span>/ Work History</span></div>
+  <h2 class="section-heading">Where I've <em>built</em><br>real things</h2>
+  <div class="exp-timeline">
+
+    <div class="exp-item">
+      <div class="exp-dot"></div>
+      <div class="exp-meta">Current Role <span class="period">05/2025 – 04/2026</span></div>
+      <div class="exp-company">The Objects <span class="badge">Full-Time</span></div>
+      <div class="exp-role">Operations Executive</div>
+      <ul class="exp-points">
+        <li>Diagnosed and resolved 400+ technical/customer issues using structured debugging and root cause analysis — zero repeat escalation.</li>
+        <li>Operated Future Rip production software for print job scheduling and phone case manufacturing workflows.</li>
+        <li>Awarded <strong>Silver Coin Recognition</strong> for outstanding performance and efficiency.</li>
+      </ul>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-dot"></div>
+      <div class="exp-meta">Internship <span class="period">03/2025 – 04/2025</span></div>
+      <div class="exp-company">The Objects <span class="badge">Intern → FTE</span></div>
+      <div class="exp-role">Operations Intern</div>
+      <ul class="exp-points">
+        <li>Supported technical operations and debugging in a fast-paced software-driven environment.</li>
+        <li>Recognized for adaptability and performance — converted to full-time role within 2 months.</li>
+      </ul>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-dot"></div>
+      <div class="exp-meta">Summer Internship <span class="period">06/2024 – 07/2024</span></div>
+      <div class="exp-company">Flextronics Technologies <span class="badge">Fortune 500</span></div>
+      <div class="exp-role">EDI & API Systems Intern</div>
+      <ul class="exp-points">
+        <li>Contributed to enterprise-scale API and EDI integration systems handling B2B and A2A communication across global partners.</li>
+        <li>Implemented integrations using REST, SOAP, AS2, EDIFACT, and XML for secure, standardized data exchange.</li>
+        <li>Optimized 5+ EDI integration workflows, reducing onboarding documentation time by <strong>30%</strong>.</li>
+        <li>Designed and documented integration workflows improving system transparency.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section class="projects" id="projects">
+  <div class="section-label">04 — Projects <span>/ Built & Shipped</span></div>
+  <h2 class="section-heading">Things I've <em>built</em><br>from scratch</h2>
+  <div class="projects-grid">
+
+    <div class="project-card project-highlight">
+      <div class="project-num">01</div>
+      <div class="project-title">PortfolioAI Pro — Stock Market Simulation</div>
+      <p class="project-desc">
+        A full-featured financial platform targeting Indian NSE/BSE markets. Real-time data processing with virtual paper trading, live API integrations, financial calculators (SIP, CAGR, XIRR), market news, and an AI-powered portfolio analysis engine.
+      </p>
+      <div class="project-stack">
+        <span class="stack-tag">Node.js</span>
+        <span class="stack-tag">Express.js</span>
+        <span class="stack-tag">React.js</span>
+        <span class="stack-tag">PostgreSQL</span>
+        <span class="stack-tag">MongoDB</span>
+        <span class="stack-tag">Twelve Data API</span>
+        <span class="stack-tag">Alpha Vantage</span>
+        <span class="stack-tag">Yahoo Finance</span>
+      </div>
+      <ul class="exp-points" style="margin-bottom:28px">
+        <li>Integrated 3 live market APIs processing 1,000+ data points daily</li>
+        <li>Built paper trading system — virtual funds, buy/sell orders, portfolio tracking</li>
+        <li>Designed responsive dashboard for stock trends and market movements</li>
+      </ul>
+      <a href="https://github.com/Ajai21456/PORTFOLIO-Financial-" target="_blank" class="project-link">View on GitHub <span>→</span></a>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">02</div>
+      <div class="project-title">Online File Management System</div>
+      <p class="project-desc">
+        A secure multi-user file management platform with email login, JWT authentication, and role-based access control across 3 permission levels — supporting 5+ file formats.
+      </p>
+      <div class="project-stack">
+        <span class="stack-tag">Python</span>
+        <span class="stack-tag">React.js</span>
+        <span class="stack-tag">PostgreSQL</span>
+        <span class="stack-tag">Appwrite</span>
+        <span class="stack-tag">JWT Auth</span>
+        <span class="stack-tag">Tailwind CSS</span>
+      </div>
+      <ul class="exp-points" style="margin-bottom:28px">
+        <li>Implemented authentication and RBAC with 3 permission tiers</li>
+        <li>Designed and tested REST APIs for upload, sharing & retrieval via Postman</li>
+        <li>Supports multi-format uploads with secure data access controls</li>
+      </ul>
+      <a href="https://github.com/Ajai21456/file_management-" target="_blank" class="project-link">View on GitHub <span>→</span></a>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">03</div>
+      <div class="project-title">Java Enterprise Lab Suite</div>
+      <p class="project-desc">
+        A collection of Java enterprise experiments — RMI Calculator, cookie-based HTTP server, KBC quiz app, and JSP equivalents. Built using <code>com.sun.net.httpserver</code> with no servlets.
+      </p>
+      <div class="project-stack">
+        <span class="stack-tag">Java</span>
+        <span class="stack-tag">RMI</span>
+        <span class="stack-tag">JSP</span>
+        <span class="stack-tag">HTTP Server</span>
+        <span class="stack-tag">Cookie Auth</span>
+      </div>
+      <a href="https://github.com/Ajai21456" target="_blank" class="project-link">View GitHub <span>→</span></a>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">04</div>
+      <div class="project-title">NSE Stock Performance Tracker</div>
+      <p class="project-desc">
+        Excel/Google Sheets-based stock performance tracker comparing NSE stocks against the Nifty 50 benchmark using CAGR formulas, conditional formatting, and real-time data pulls.
+      </p>
+      <div class="project-stack">
+        <span class="stack-tag">Excel</span>
+        <span class="stack-tag">Google Sheets</span>
+        <span class="stack-tag">CAGR</span>
+        <span class="stack-tag">NSE Data</span>
+        <span class="stack-tag">Nifty 50</span>
+      </div>
+      <a href="https://github.com/Ajai21456" target="_blank" class="project-link">View GitHub <span>→</span></a>
+    </div>
+
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section class="education" id="education">
+  <div class="section-label">05 — Education <span>/ Academic Background</span></div>
+  <h2 class="section-heading">Always <em>learning,</em><br>always building</h2>
+  <div class="edu-grid">
+    <div class="edu-card">
+      <div class="edu-degree">Master of Science<br>in Computer Science</div>
+      <div class="gold-line"></div>
+      <div class="edu-school">Hindustan College of Arts and Science</div>
+      <div class="edu-period">2025 – 2027 (Expected) · Chennai, India</div>
+    </div>
+    <div class="edu-card">
+      <div class="edu-degree">Bachelor of Science<br>in Computer Science</div>
+      <div class="gold-line"></div>
+      <div class="edu-school">Asan Memorial College of Arts and Science</div>
+      <div class="edu-period">2022 – 2025 · Chennai, India</div>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section class="certs" id="certs">
+  <div class="section-label">06 — Certifications <span>/ Credentials</span></div>
+  <h2 class="section-heading">Verified <em>expertise</em></h2>
+  <div class="cert-list">
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">Oracle Certified Foundations Associate</div>
+        <div class="cert-issuer">Oracle University</div>
+      </div>
+      <div class="cert-date">March 2024</div>
+    </div>
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">MongoDB, Node.js & CRUD Operations</div>
+        <div class="cert-issuer">MongoDB University</div>
+      </div>
+      <div class="cert-date">March 2024</div>
+    </div>
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">Cloud Computing & Distributed Systems — Elite</div>
+        <div class="cert-issuer">NPTEL Online Certification</div>
+      </div>
+      <div class="cert-date">Jan – Mar 2026</div>
+    </div>
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">AI For Everyone</div>
+        <div class="cert-issuer">Coursera · DeepLearning.AI</div>
+      </div>
+      <div class="cert-date">July 2025</div>
+    </div>
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">Technology Software Development Job Simulation</div>
+        <div class="cert-issuer">CITI Program</div>
+      </div>
+      <div class="cert-date">May 2026</div>
+    </div>
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">Consultant Job Simulation</div>
+        <div class="cert-issuer">Accenture</div>
+      </div>
+      <div class="cert-date">May 2025</div>
+    </div>
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">SQL Programming · Python</div>
+        <div class="cert-issuer">LinkedIn Learning</div>
+      </div>
+      <div class="cert-date">June 2021</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="section-label" style="justify-content:center">07 — Contact <span>/ Reach Out</span></div>
+  <div class="contact-title">
+    Let's build<br>something <em>great.</em>
+  </div>
+  <p style="font-size:13px; color:var(--muted); max-width:480px; margin:0 auto; line-height:1.9;">
+    Open to Backend Developer and Software Developer opportunities in Chennai or remote across India. Let's talk.
+  </p>
+  <div class="contact-links">
+    <a href="mailto:ajai21456@gmail.com" class="contact-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      ajai21456@gmail.com
+    </a>
+    <a href="https://linkedin.com/in/ajai-c" target="_blank" class="contact-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      linkedin.com/in/ajai-c
+    </a>
+    <a href="https://github.com/Ajai21456" target="_blank" class="contact-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+      github.com/Ajai21456
+    </a>
+    <a href="tel:+917338759144" class="contact-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.22 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+      +91 7338 759 144
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-copy">© 2025 Ajai C. All rights reserved.</div>
+  <div class="footer-heart">Crafted with <span>✦</span> in Chennai, Tamil Nadu</div>
+</footer>
+
+<!-- Scroll to top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  // ── CURSOR ──
+  const cursor = document.getElementById('cursor');
+  const dot = cursor.querySelector('.cursor-dot');
+  const ring = cursor.querySelector('.cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    rx += (mx - rx) * 0.18;
+    ry += (my - ry) * 0.18;
+    dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+
+  // ── NAV SCROLL ──
+  window.addEventListener('scroll', () => {
+    document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+    document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 400);
+  });
+
+  // ── COUNT UP ──
+  function countUp(el) {
+    const target = parseInt(el.dataset.count);
+    const dur = 1800; const step = 16;
+    const inc = target / (dur / step);
+    let cur = 0;
+    const timer = setInterval(() => {
+      cur = Math.min(cur + inc, target);
+      el.textContent = Math.floor(cur) + (target >= 100 ? '+' : '');
+      if (cur >= target) clearInterval(timer);
+    }, step);
+  }
+
+  // ── INTERSECTION OBSERVER ──
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+
+        // count-up
+        const countEls = e.target.querySelectorAll('[data-count]');
+        countEls.forEach(el => { if (!el.dataset.counted) { el.dataset.counted = '1'; countUp(el); } });
+
+        // skill bars
+        const bars = e.target.querySelectorAll('.skill-bar-fill');
+        bars.forEach(b => { setTimeout(() => b.classList.add('animated'), 200); });
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.exp-item, .project-card, .edu-card, .cert-item, .stat-card, .skill-group, .about-stats').forEach(el => obs.observe(el));
+
+  // ── STAGGER CERT ITEMS ──
+  document.querySelectorAll('.cert-item').forEach((el, i) => {
+    el.style.transitionDelay = (i * 0.07) + 's';
+  });
+
+  // ── STAGGER PROJECT CARDS ──
+  document.querySelectorAll('.project-card').forEach((el, i) => {
+    el.style.transitionDelay = (i * 0.1) + 's';
+  });
+
+  // ── PARALLAX BG TEXT ──
+  window.addEventListener('scroll', () => {
+    const bgTexts = document.querySelectorAll('.bg-text');
+    bgTexts.forEach(t => {
+      t.style.transform = `translateY(calc(-50% + ${window.scrollY * 0.05}px)) rotate(90deg)`;
+    });
+  });
+</script>
+</body>
+</html>
